@@ -11,6 +11,8 @@ struct OnboardingView: View {
     //the value being set is not overriding, it works like a default value in case userdefaults is nil
     
     @AppStorage("onboarding") var isOnboarding: Bool = true
+    @State private var buttonWidth =  UIScreen.main.bounds.width - 80
+    @State private var buttonOffset: CGFloat = 0
     
     var body: some View {
         ZStack {
@@ -55,7 +57,7 @@ struct OnboardingView: View {
                     HStack {
                         Capsule()
                             .fill(Color("ColorRed"))
-                            .frame(width: 80)
+                            .frame(width: buttonOffset + 80)
                         Spacer()
                     }
                     
@@ -71,19 +73,31 @@ struct OnboardingView: View {
                         }
                         .foregroundColor(Color.white)
                         .frame(width: 80, height: 80, alignment: .center)
-                        .onTapGesture {
-                            isOnboarding = false
-                        }
+                        .offset(x: buttonOffset)
+                        .gesture(
+                            DragGesture()
+                                .onChanged { gesture in
+                                    if gesture.translation.width > 0 && buttonOffset <= buttonWidth - 80 {
+                                        buttonOffset = gesture.translation.width
+                                    }
+                                }
+                                .onEnded { _ in
+                                    if buttonOffset > buttonWidth/2 {
+                                        buttonOffset = buttonWidth - 80
+                                        isOnboarding = false
+                                    } else {
+                                        buttonOffset = 0
+                                    }
+                                }
+                        )
                         
                         Spacer()
                     }
                 }
-                .frame(height: 80, alignment: .center)
+                .frame(width: buttonWidth, height: 80, alignment: .center)
                 .padding()
             }
         }
-        
-        
     }
 }
 
